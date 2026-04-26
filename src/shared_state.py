@@ -19,6 +19,7 @@ class HighlightedNode:
 @dataclass(slots=True)
 class RotationStep:
     label: str
+    snapshot_root: Any = None
     payload: dict = field(default_factory=dict)
 
 """Check to see if animation is running"""
@@ -93,6 +94,15 @@ global shared instance
 - Do not create another AppState() anywhere else, or it will break things
 """
 state = AppState()
+
+def current_display_root():
+    if state.animation.in_progress and state.animation.steps:
+        i = state.animation.step_index
+        if 0 <= i < len(state.animation.steps):
+            snap = state.animation.steps[i].snapshot_root
+            if snap is not None:
+                return snap
+    return state.current_root()
 
 
 # Helper functions to modify state and trigger redraws
