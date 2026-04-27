@@ -3,6 +3,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Optional, List
 
+from avl_tree import AVLTree
+from red_black_tree import RedBlackTree
+
 """Which tree is currently active"""
 class ActiveTreeType(str, Enum):
     AVL = "AVL"
@@ -51,8 +54,8 @@ class AppState:
     tree_type: ActiveTreeType = ActiveTreeType.AVL # Which tree is active
 
     # Root pointers for each tree to toggle views
-    avl_root: Any = None
-    rb_root: Any = None
+    avl_tree: AVLTree = field(default_factory=AVLTree)
+    rb_tree: RedBlackTree = field(default_factory=RedBlackTree)
 
     # UI selection/highlight
     highlight: HighlightedNode = field(default_factory=HighlightedNode)
@@ -69,14 +72,14 @@ class AppState:
 
     # Returns the root for which tree is currently active
     def current_root(self) -> Any:
-        return self.avl_root if self.tree_type == ActiveTreeType.AVL else self.rb_root
-
-    # sets root of the active tree
-    def set_current_root(self, root: Any) -> None:
         if self.tree_type == ActiveTreeType.AVL:
-            self.avl_root = root
+            return self.avl_tree.root
         else:
-            self.rb_root = root
+            return self.rb_tree.root
+
+    # Returns the tree instance that is currently active
+    def current_tree(self) -> Any:
+        return self.avl_tree if self.tree_type == ActiveTreeType.AVL else self.rb_tree
 
     # signals "state changed so UI should update"
     # sets the root of the active tree
