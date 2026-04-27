@@ -28,7 +28,7 @@ class AnimationState:
     in_progress: bool = False #True while animation is playing
     step_index: int = 0
     steps: List[RotationStep] = field(default_factory=list)
-    delay_ms: int = 350
+    delay_ms: int = 1000
 
     # clears everything and ends animation
     def reset(self) -> None:

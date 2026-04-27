@@ -72,29 +72,39 @@ def insert(root, value: int):
 
         if balance > 1 and value < node.left.value:
             rotation_count += 1
-            steps.append(RotationStep("Right Rotation (LL)", snapshot_root=clone_tree(root)))
-            return _rotate_right(node)
+            steps.append(RotationStep("Right Rotation (LL)", snapshot_root=clone_tree(node)))
+            node = _rotate_right(node)
+            steps.append(RotationStep("After Right Rotation (LL)", snapshot_root=clone_tree(node)))
+            return node
 
         if balance < -1 and value > node.right.value:
             rotation_count += 1
-            steps.append(RotationStep("Left Rotation (RR)", snapshot_root=clone_tree(root)))
-            return _rotate_left(node)
+            steps.append(RotationStep("Left Rotation (RR)", snapshot_root=clone_tree(node)))
+            node = _rotate_left(node)
+            steps.append(RotationStep("After Left Rotation (RR)", snapshot_root=clone_tree(node)))
+            return node
 
         if balance > 1 and value > node.left.value:
             rotation_count += 1
-            steps.append(RotationStep("Left Rotation (LR step 1)", snapshot_root=clone_tree(root)))
+            steps.append(RotationStep("Left Rotation (LR step 1)", snapshot_root=clone_tree(node)))
             node.left = _rotate_left(node.left)
+            steps.append(RotationStep("After LR step 1", snapshot_root=clone_tree(node)))
             rotation_count += 1
-            steps.append(RotationStep("Right Rotation (LR step 2)", snapshot_root=clone_tree(root)))
-            return _rotate_right(node)
+            steps.append(RotationStep("Right Rotation (LR step 2)", snapshot_root=clone_tree(node)))
+            node = _rotate_right(node)
+            steps.append(RotationStep("After LR step 2", snapshot_root=clone_tree(node)))
+            return node
 
         if balance < -1 and value < node.right.value:
             rotation_count += 1
-            steps.append(RotationStep("Right Rotation (RL step 1)", snapshot_root=clone_tree(root)))
+            steps.append(RotationStep("Right Rotation (RL step 1)", snapshot_root=clone_tree(node)))
             node.right = _rotate_right(node.right)
+            steps.append(RotationStep("After RL step 1", snapshot_root=clone_tree(node)))
             rotation_count += 1
-            steps.append(RotationStep("Left Rotation (RL step 2)", snapshot_root=clone_tree(root)))
-            return _rotate_left(node)
+            steps.append(RotationStep("Left Rotation (RL step 2)", snapshot_root=clone_tree(node)))
+            node = _rotate_left(node)
+            steps.append(RotationStep("After RL step 2", snapshot_root=clone_tree(node)))
+            return node
 
         return node
 
@@ -187,27 +197,37 @@ def delete(root, value: int):
             left_bf = _bf(node.left)
             if left_bf >= 0:
                 rotation_count += 1
-                steps.append(RotationStep("Right Rotation (LL)", snapshot_root=clone_tree(root)))
-                return _rotate_right(node)
+                steps.append(RotationStep("Right Rotation (LL)", snapshot_root=clone_tree(node)))
+                node = _rotate_right(node)
+                steps.append(RotationStep("After Right Rotation (LL)", snapshot_root=clone_tree(node)))
+                return node
             rotation_count += 1
-            steps.append(RotationStep("Left Rotation (LR step 1)", snapshot_root=clone_tree(root)))
+            steps.append(RotationStep("Left Rotation (LR step 1)", snapshot_root=clone_tree(node)))
             node.left = _rotate_left(node.left)
+            steps.append(RotationStep("After LR step 1", snapshot_root=clone_tree(node)))
             rotation_count += 1
-            steps.append(RotationStep("Right Rotation (LR step 2)", snapshot_root=clone_tree(root)))
-            return _rotate_right(node)
+            steps.append(RotationStep("Right Rotation (LR step 2)", snapshot_root=clone_tree(node)))
+            node = _rotate_right(node)
+            steps.append(RotationStep("After LR step 2", snapshot_root=clone_tree(node)))
+            return node
 
         if balance < -1:
             right_bf = _bf(node.right)
             if right_bf <= 0:
                 rotation_count += 1
-                steps.append(RotationStep("Left Rotation (RR)", snapshot_root=clone_tree(root)))
-                return _rotate_left(node)
+                steps.append(RotationStep("Left Rotation (RR)", snapshot_root=clone_tree(node)))
+                node = _rotate_left(node)
+                steps.append(RotationStep("After Left Rotation (RR)", snapshot_root=clone_tree(node)))
+                return node
             rotation_count += 1
-            steps.append(RotationStep("Right Rotation (RL step 1)", snapshot_root=clone_tree(root)))
+            steps.append(RotationStep("Right Rotation (RL step 1)", snapshot_root=clone_tree(node)))
             node.right = _rotate_right(node.right)
+            steps.append(RotationStep("After RL step 1", snapshot_root=clone_tree(node)))
             rotation_count += 1
-            steps.append(RotationStep("Left Rotation (RL step 2)", snapshot_root=clone_tree(root)))
-            return _rotate_left(node)
+            steps.append(RotationStep("Left Rotation (RL step 2)", snapshot_root=clone_tree(node)))
+            node = _rotate_left(node)
+            steps.append(RotationStep("After RL step 2", snapshot_root=clone_tree(node)))
+            return node
 
         return node
 
