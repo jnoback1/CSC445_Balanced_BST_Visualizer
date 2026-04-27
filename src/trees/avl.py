@@ -111,3 +111,107 @@ def search(root, value: int) -> bool:
             return True
         cur = cur.left if value < cur.value else cur.right
     return False
+
+
+def delete(root, value: int):
+    steps = []
+    rotation_count = 0
+
+    def _min_value_node(n: AVLNode) -> AVLNode:
+        cur = n
+        while cur.left is not None:
+            cur = cur.left
+        return cur
+
+    def _delete_exact(node, exact_value: int):
+        if node is None:
+            return None
+        if exact_value < node.value:
+            node.left = _delete_exact(node.left, exact_value)
+        elif exact_value > node.value:
+            node.right = _delete_exact(node.right, exact_value)
+        else:
+            if node.left is None:
+                return node.right
+            if node.right is None:
+                return node.left
+            succ = _min_value_node(node.right)
+            node.value = succ.value
+            node.right = _delete_exact(node.right, succ.value)
+
+        if node is None:
+            return None
+
+        _update(node)
+        balance = _bf(node)
+
+        if balance > 1:
+            if _bf(node.left) >= 0:
+                return _rotate_right(node)
+            node.left = _rotate_left(node.left)
+            return _rotate_right(node)
+
+        if balance < -1:
+            if _bf(node.right) <= 0:
+                return _rotate_left(node)
+            node.right = _rotate_right(node.right)
+            return _rotate_left(node)
+
+        return node
+
+    def rec(node):
+        nonlocal rotation_count
+        if node is None:
+            return None
+
+        if value < node.value:
+            node.left = rec(node.left)
+        elif value > node.value:
+            node.right = rec(node.right)
+        else:
+            if node.left is None:
+                return node.right
+            if node.right is None:
+                return node.left
+            succ = _min_value_node(node.right)
+            node.value = succ.value
+            node.right = _delete_exact(node.right, succ.value)
+
+        if node is None:
+            return None
+
+        _update(node)
+        balance = _bf(node)
+
+        if balance > 1:
+            left_bf = _bf(node.left)
+            if left_bf >= 0:
+                rotation_count += 1
+                steps.append(RotationStep("Right Rotation (LL)", snapshot_root=clone_tree(root)))
+                return _rotate_right(node)
+            rotation_count += 1
+            steps.append(RotationStep("Left Rotation (LR step 1)", snapshot_root=clone_tree(root)))
+            node.left = _rotate_left(node.left)
+            rotation_count += 1
+            steps.append(RotationStep("Right Rotation (LR step 2)", snapshot_root=clone_tree(root)))
+            return _rotate_right(node)
+
+        if balance < -1:
+            right_bf = _bf(node.right)
+            if right_bf <= 0:
+                rotation_count += 1
+                steps.append(RotationStep("Left Rotation (RR)", snapshot_root=clone_tree(root)))
+                return _rotate_left(node)
+            rotation_count += 1
+            steps.append(RotationStep("Right Rotation (RL step 1)", snapshot_root=clone_tree(root)))
+            node.right = _rotate_right(node.right)
+            rotation_count += 1
+            steps.append(RotationStep("Left Rotation (RL step 2)", snapshot_root=clone_tree(root)))
+            return _rotate_left(node)
+
+        return node
+
+    new_root = rec(root)
+    steps.insert(0, RotationStep(f"Delete {value}", snapshot_root=clone_tree(new_root)))
+    steps.append(RotationStep("Done", snapshot_root=clone_tree(new_root)))
+    return new_root, steps, rotation_count

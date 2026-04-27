@@ -170,3 +170,189 @@ def search(root, value: int) -> bool:
             return True
         cur = cur.left if value < cur.value else cur.right
     return False
+
+
+def _minimum(x: RBNode) -> RBNode:
+    cur = x
+    while cur.left is not None:
+        cur = cur.left
+    return cur
+
+
+def _transplant(root, u: RBNode, v):
+    if u.parent is None:
+        root = v
+    elif u == u.parent.left:
+        u.parent.left = v
+    else:
+        u.parent.right = v
+    if v is not None:
+        v.parent = u.parent
+    return root
+
+
+def _delete_fixup(root, x, parent):
+    steps = []
+    rotation_count = 0
+
+    def set_color(n, c):
+        if n is not None:
+            n.color = c
+
+    while (x != root) and (_color(x) == BLACK):
+        if parent is None:
+            break
+
+        if x == parent.left:
+            w = parent.right
+            if w is None:
+                x = parent
+                parent = x.parent
+                continue
+
+            if _color(w) == RED:
+                steps.append(RotationStep("Fixup: Case 1 (sibling red)", snapshot_root=clone_tree(root)))
+                set_color(w, BLACK)
+                set_color(parent, RED)
+                root = _rotate_left(root, parent)
+                rotation_count += 1
+                w = parent.right
+                if w is None:
+                    x = parent
+                    parent = x.parent
+                    continue
+
+            if _color(w.left) == BLACK and _color(w.right) == BLACK:
+                steps.append(RotationStep("Fixup: Case 2", snapshot_root=clone_tree(root)))
+                set_color(w, RED)
+                x = parent
+                parent = x.parent
+            else:
+                if _color(w.right) == BLACK:
+                    steps.append(RotationStep("Fixup: Case 3", snapshot_root=clone_tree(root)))
+                    set_color(w.left, BLACK)
+                    set_color(w, RED)
+                    root = _rotate_right(root, w)
+                    rotation_count += 1
+                    w = parent.right
+                    if w is None:
+                        x = parent
+                        parent = x.parent
+                        continue
+
+                steps.append(RotationStep("Fixup: Case 4", snapshot_root=clone_tree(root)))
+                set_color(w, parent.color)
+                set_color(parent, BLACK)
+                set_color(w.right, BLACK)
+                root = _rotate_left(root, parent)
+                rotation_count += 1
+                x = root
+                parent = None
+        else:
+            w = parent.left
+            if w is None:
+                x = parent
+                parent = x.parent
+                continue
+
+            if _color(w) == RED:
+                steps.append(RotationStep("Fixup: Case 1 (mirror)", snapshot_root=clone_tree(root)))
+                set_color(w, BLACK)
+                set_color(parent, RED)
+                root = _rotate_right(root, parent)
+                rotation_count += 1
+                w = parent.left
+                if w is None:
+                    x = parent
+                    parent = x.parent
+                    continue
+
+            if _color(w.left) == BLACK and _color(w.right) == BLACK:
+                steps.append(RotationStep("Fixup: Case 2 (mirror)", snapshot_root=clone_tree(root)))
+                set_color(w, RED)
+                x = parent
+                parent = x.parent
+            else:
+                if _color(w.left) == BLACK:
+                    steps.append(RotationStep("Fixup: Case 3 (mirror)", snapshot_root=clone_tree(root)))
+                    set_color(w.right, BLACK)
+                    set_color(w, RED)
+                    root = _rotate_left(root, w)
+                    rotation_count += 1
+                    w = parent.left
+                    if w is None:
+                        x = parent
+                        parent = x.parent
+                        continue
+
+                steps.append(RotationStep("Fixup: Case 4 (mirror)", snapshot_root=clone_tree(root)))
+                set_color(w, parent.color)
+                set_color(parent, BLACK)
+                set_color(w.left, BLACK)
+                root = _rotate_right(root, parent)
+                rotation_count += 1
+                x = root
+                parent = None
+
+    if x is not None:
+        x.color = BLACK
+
+    steps.append(RotationStep("Fixup complete", snapshot_root=clone_tree(root)))
+    return root, steps, rotation_count
+
+def delete(root, value: int):
+    steps = []
+    rotation_count = 0
+
+    z = root
+    while z is not None and z.value != value:
+        z = z.left if value < z.value else z.right
+
+    if z is None:
+        steps.append(RotationStep(f"Delete {value} (not found)", snapshot_root=clone_tree(root)))
+        return root, steps, 0
+
+    steps.append(RotationStep(f"Delete {value}", snapshot_root=clone_tree(root)))
+
+    y = z
+    y_original_color = y.color
+    x = None
+    x_parent = None
+
+    if z.left is None:
+        x = z.right
+        x_parent = z.parent
+        root = _transplant(root, z, z.right)
+    elif z.right is None:
+        x = z.left
+        x_parent = z.parent
+        root = _transplant(root, z, z.left)
+    else:
+        y = _minimum(z.right)
+        y_original_color = y.color
+        x = y.right
+        if y.parent == z:
+            x_parent = y
+        else:
+            x_parent = y.parent
+            root = _transplant(root, y, y.right)
+            y.right = z.right
+            y.right.parent = y
+
+        root = _transplant(root, z, y)
+        y.left = z.left
+        y.left.parent = y
+        y.color = z.color
+
+    steps.append(RotationStep("After BST removal", snapshot_root=clone_tree(root)))
+
+    if y_original_color == BLACK:
+        root, fix_steps, fix_rots = _delete_fixup(root, x, x_parent)
+        steps.extend(fix_steps)
+        rotation_count += fix_rots
+
+    if root is not None:
+        root.color = BLACK
+
+    steps.append(RotationStep("Done", snapshot_root=clone_tree(root)))
+    return root, steps, rotation_count

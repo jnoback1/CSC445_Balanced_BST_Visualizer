@@ -53,9 +53,21 @@ def delete_value(value: int) -> None:
     set_highlight(value, reason="delete")
 
     if state.tree_type == ActiveTreeType.AVL:
-        state.touch("AVL delete: not implemented yet")
+        new_root, steps, rot_count = avl.delete(state.avl_root, value)
+        state.avl_root = new_root
+        state.metrics.avl_rotations += rot_count
+        state.metrics.avl_height = new_root.height if new_root is not None else 0
+        if steps:
+            begin_animation(steps)
+        state.touch(f"AVL: deleted {value}")
     else:
-        state.touch("Red-Black delete: not implemented yet")
+        new_root, steps, rot_count = rbtree.delete(state.rb_root, value)
+        state.rb_root = new_root
+        state.metrics.rb_rotations += rot_count
+        state.metrics.rb_height = _height(new_root)
+        if steps:
+            begin_animation(steps)
+        state.touch(f"Red-Black: deleted {value}")
 
 
 def search_value(value: int) -> None:

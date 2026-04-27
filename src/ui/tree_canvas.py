@@ -14,6 +14,9 @@ class TreeCanvas(ttk.Frame):
             highlightbackground="#ccc",
         )
         self.canvas.pack(fill="both", expand=True)
+        self.zoom = 1.0
+        self.zoom_min = 0.4
+        self.zoom_max = 2.5
 
         self._last_revision = -1
         self.after(50, self._poll_and_redraw)
@@ -66,10 +69,11 @@ class TreeCanvas(ttk.Frame):
             )
             return
 
+        z = self.zoom
         start_x = w // 2
-        start_y = 110
-        dx = max(w * 0.25, 60)
-        level_gap = 90
+        start_y = int(110 * z)
+        dx = max(w * 0.25 * z, 60 * z)
+        level_gap = int(90 * z)
 
         self._draw_node(root, start_x, start_y, dx, level_gap)
 
@@ -88,7 +92,7 @@ class TreeCanvas(ttk.Frame):
         if node is None:
             return
 
-        r = 20
+        r = int(20 * self.zoom)
         fill = self._node_fill(node)
 
         if node.left is not None:
@@ -107,7 +111,7 @@ class TreeCanvas(ttk.Frame):
         if hasattr(node, "height"):
             bf = self._h(node.left) - self._h(node.right)
             self.canvas.create_text(
-                x, y + r + 12,
+                x, y + r + int(12 * self.zoom),
                 text=f"h={node.height} bf={bf}",
                 fill="#333",
                 font=("Arial", 10),
@@ -115,8 +119,20 @@ class TreeCanvas(ttk.Frame):
 
         if hasattr(node, "color"):
             self.canvas.create_text(
-                x, y + r + 12,
+                x, y + r + int(12 * self.zoom),
                 text=node.color,
                 fill="#333",
                 font=("Arial", 10),
             )
+    
+    def zoom_in(self):
+        self.zoom = min(self.zoom * 1.15, self.zoom_max)
+        state.touch()
+
+    def zoom_out(self):
+        self.zoom = max(self.zoom / 1.15, self.zoom_min)
+        state.touch()
+
+    def reset_zoom(self):
+        self.zoom = 1.0
+        state.touch()

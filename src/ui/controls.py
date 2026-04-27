@@ -5,9 +5,10 @@ from shared_state import state, ActiveTreeType
 
 
 class Controls(ttk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, tree_canvas):
         super().__init__(parent, padding=8)
 
+        self.tree_canvas = tree_canvas
         self.value_var = tk.StringVar()
         self.tree_var = tk.StringVar(value=state.tree_type.value)
 
@@ -24,6 +25,15 @@ class Controls(ttk.Frame):
         self.btn_insert.grid(row=0, column=2, padx=4)
         self.btn_delete.grid(row=0, column=3, padx=4)
         self.btn_search.grid(row=0, column=4, padx=4)
+        
+        self.btn_zoom_out = ttk.Button(self, text="Zoom -", command=self.tree_canvas.zoom_out)
+        self.btn_zoom_out.grid(row=0, column=7, padx=(16, 4))
+
+        self.btn_zoom_reset = ttk.Button(self, text="Reset", command=self.tree_canvas.reset_zoom)
+        self.btn_zoom_reset.grid(row=0, column=8, padx=4)
+
+        self.btn_zoom_in = ttk.Button(self, text="Zoom +", command=self.tree_canvas.zoom_in)
+        self.btn_zoom_in.grid(row=0, column=9, padx=4)
 
         toggle = ttk.Frame(self)
         toggle.grid(row=0, column=5, padx=(16, 0), sticky="e")

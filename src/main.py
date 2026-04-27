@@ -14,8 +14,11 @@ def main():
     except tk.TclError:
         pass
 
-    Controls(root).pack(side="top", fill="x")
-    TreeCanvas(root).pack(side="top", fill="both", expand=True)
+    canvas = TreeCanvas(root)
+    controls = Controls(root, canvas)
+
+    controls.pack(side="top", fill="x")
+    canvas.pack(side="top", fill="both", expand=True)
 
     root.minsize(900, 500)
 
